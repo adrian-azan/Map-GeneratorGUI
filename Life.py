@@ -2,10 +2,11 @@ from Generator import Generator
 import tkinter as tk
 from tkinter import ttk
 from PIL import ImageTk, Image
+import random as ran
 
 class Life(Generator):
     def __init__(self, width, height, limit, noise, lifeTab):
-        super().__init__(width+1,height+1)
+        super().__init__(width+2,height+2)
         self.generation = 0
         self.limit = limit
         self.noise = noise
@@ -22,6 +23,9 @@ class Life(Generator):
         self.NoiseLabel = tk.Label(lifeTab, text = "Noise %")       
         
         self.canvasMap = tk.Canvas(lifeTab)
+
+        self.pixelTypes[1] = ("Dirt", (255,255,255))
+        self.pixelTypes[0] = ("Air", (0,0,0))
     
     def guiSetUp(self):
         self.HeightLabel.grid(row=1,column=1,sticky="W")
@@ -41,9 +45,10 @@ class Life(Generator):
             
             self.setLimit(self.GenEntry.get())
             self.setNoise(self.NoiseEntry.get())
+            self.restart()
             while self.finished() == False:
                 self.life()
-                print("finished")
+            self.output(str(self.width)+"x"+str(self.height))
                     
         except ValueError:
             print("Could not set")
@@ -52,20 +57,20 @@ class Life(Generator):
         self.generation += 1
         
         next = [[1 for j in range(self.width)] for i in range(self.height)]
+
         #print(self.height,self.width)
         for i in range(1,self.height-1):
             for j in range(1, self.width-1):
                 sumCell = 0
-                print(i,j)
                 sumCell += self.map[i+1][j] #bottom
                 sumCell += self.map[i-1][j] #top
                 sumCell += self.map[i][j+1] #right
-                sumCell += self.map[i][j-1] #lef
+                sumCell += self.map[i][j-1] #left
                 sumCell += self.map[i+1][j+1] #bottom right
                 sumCell += self.map[i+1][j-1] #bottom left
                 sumCell += self.map[i-1][j+1] #top right
                 sumCell += self.map[i-1][j-1] #top left                
-                
+
                 if sumCell >= 6:
                     next[i][j] = 1
                 elif sum == 3:
@@ -78,6 +83,8 @@ class Life(Generator):
         return self.generation >= self.limit
     
     def restart(self):
+        del self.map
+        self.map = [[1 for j in range(self.width)] for i in range(self.height)]
         for i in range(1, self.height - 1):
             for j in range(1, self.width - 1):
                 chance = ran.randint(0, 100)
@@ -121,7 +128,7 @@ class Life(Generator):
             raise TypeError        
         
         if height >= 4:
-            self.height = height + 1
+            self.height = height + 2
         else:
             print("Height:")
             raise ValueError
@@ -134,7 +141,7 @@ class Life(Generator):
             raise TypeError 
         
         if width >= 4:
-            self.width = width + 1
+            self.width = width + 2
         else:
             print("Width:")
             raise ValueError        

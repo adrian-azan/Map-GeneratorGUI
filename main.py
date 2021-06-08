@@ -14,18 +14,20 @@ if __name__ == "__main__":
     lifeTab = ttk.Frame(control)
     
 
-    lifeGenerator = Life(30,30,5,50,lifeTab)
+    lifeGenerator = Life(100,100,4,80,lifeTab)
     lifeGenerator.guiSetUp()
     
     lifeButton = tk.Button(lifeTab,text="Generate")
     lifeButton.bind("<Button-1>",lifeGenerator.generate)
     lifeButton.grid(row=3,column=1)
-        
-    imageMap = Image.open("test.png")
+
+
+    lifeGenerator.output("sample.png")
+    imageMap = Image.open("sample.png")
     imageMap = ImageTk.PhotoImage(imageMap)
     
     label1 = tk.Label(lifeTab,image=imageMap)
-    label1.image = imageMap    
+    label1.image = imageMap
     label1.grid(row=0,column=1,columnspan=3)
     
     

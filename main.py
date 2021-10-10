@@ -10,18 +10,20 @@ if __name__ == "__main__":
     root.geometry("960x540")
     
     control = ttk.Notebook(root)
-    
     lifeTab = ttk.Frame(control)
     
 
     lifeGenerator = Life(100,100,4,80,lifeTab)
     lifeGenerator.guiSetUp()
-    
+
+    """
     lifeButton = tk.Button(lifeTab,text="Generate")
     lifeButton.bind("<Button-1>",lifeGenerator.generate)
     lifeButton.grid(row=3,column=1)
+    """
 
 
+    """
     lifeGenerator.output("sample.png")
     imageMap = Image.open("sample.png")
     imageMap = ImageTk.PhotoImage(imageMap)
@@ -29,10 +31,7 @@ if __name__ == "__main__":
     label1 = tk.Label(lifeTab,image=imageMap)
     label1.image = imageMap
     label1.grid(row=0,column=1,columnspan=3)
-    
-    
-    
-    
+    """
     
     diffuseTab = ttk.Frame(control)
     

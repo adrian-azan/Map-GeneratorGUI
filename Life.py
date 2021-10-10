@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import ImageTk, Image
 import random as ran
+from Miner import Miner
 
 class Life(Generator):
     def __init__(self, width, height, limit, noise, lifeTab):
@@ -10,55 +11,148 @@ class Life(Generator):
         self.generation = 0
         self.limit = limit
         self.noise = noise
-        
-        self.HeightEntry = tk.Entry(lifeTab)
-        self.WidthEntry = tk.Entry(lifeTab)
-        self.GenEntry = tk.Entry(lifeTab)
-        self.NoiseEntry = tk.Entry(lifeTab)
+        self.master = lifeTab
+
+        self.layout = dict()
+        self.layout["left"] = tk.Frame(lifeTab)
+        self.layout["right"] = tk.Frame(lifeTab)
+
+
+
+        self.HeightEntry = tk.Entry(self.layout["right"])
+        self.WidthEntry = tk.Entry(self.layout["right"])
+        self.GenEntry = tk.Entry(self.layout["right"])
+        self.NoiseEntry = tk.Entry(self.layout["right"])
         
     
-        self.HeightLabel = tk.Label(lifeTab, text="Height")
-        self.WidthLabel = tk.Label(lifeTab, text="Width")
-        self.GenLabel = tk.Label(lifeTab, text="Gen Limit")
-        self.NoiseLabel = tk.Label(lifeTab, text = "Noise %")       
-        
-        self.canvasMap = tk.Canvas(lifeTab)
+        self.HeightLabel = tk.Label(self.layout["right"], text="Height")
+        self.WidthLabel = tk.Label(self.layout["right"], text="Width")
+        self.GenLabel = tk.Label(self.layout["right"], text="Gen Limit")
+        self.NoiseLabel = tk.Label(self.layout["right"], text = "Noise %")
 
-        self.pixelTypes[1] = ("Dirt", (255,255,255))
-        self.pixelTypes[0] = ("Air", (0,0,0))
+        self.lifeButton = tk.Button(self.layout["right"], text="Generate")
+        self.lifeButton.bind("<Button-1>", self.generate)
+
+        self.previewButton = tk.Button(self.layout["right"], text="Preview")
+        self.previewButton.bind("<Button-1>", self.preview)
+
+        self.canvasMap = tk.Canvas(self.layout["left"])
+
+
+        self.imageMap = Image.new("RGB", (150,150))
+        self.imageMap = ImageTk.PhotoImage(self.imageMap)
+
+        self.ImageLabel = tk.Label(self.layout["left"], image=self.imageMap)
+        self.ImageLabel.image = self.ImageLabel
+
+
+        self.pixelTypes[1] = ("Dirt", (0,0,0),0,0)
+        self.pixelTypes[0] = ("Air", (255,255,255),0,0)
+        self.pixelTypes[2] = ("Coal", (0,255,0),20,100)
+
+
     
     def guiSetUp(self):
-        self.HeightLabel.grid(row=1,column=1,sticky="W")
-        self.WidthLabel.grid(row=2,column=1,sticky="W")
-        self.HeightEntry.grid(row=1,column=2,sticky="W")
-        self.WidthEntry.grid(row=2,column=2, sticky="W")
+
+
+        self.layout["left"].grid(row=0,column=0)
+        self.layout["right"].grid(row=0,column =1,sticky="NW")
+
+
+        self.ImageLabel.grid(row=0, column=0)
+
+        self.HeightLabel.grid(row=0,column=0,sticky="NW")
+        self.HeightEntry.grid(row=0, column=1, sticky="NW")
+        self.WidthLabel.grid(row=1,column=0,sticky="NW")
+        self.WidthEntry.grid(row=1,column=1, sticky="NW")
         
-        self.GenLabel.grid(row=1,column=3,sticky="W")
-        self.GenEntry.grid(row=1,column=4,sticky="W")
-        self.NoiseLabel.grid(row=2,column=3,sticky="W")
-        self.NoiseEntry.grid(row=2,column=4,sticky="W")     
-        
+        self.GenLabel.grid(row=0,column=2,sticky="NW")
+        self.GenEntry.grid(row=0,column=3,sticky="NW")
+        self.NoiseLabel.grid(row=1,column=2,sticky="NW")
+        self.NoiseEntry.grid(row=1,column=3,sticky="NW")
+
+        self.previewButton.grid(row=3,column=0)
+        self.lifeButton.grid(row=4, column=0,sticky="SW")
+
+
+    def preview(self,event):
+        try:
+            self.setWidth(self.HeightEntry.get())
+            self.setHeight(self.WidthEntry.get())
+
+            self.setLimit(self.GenEntry.get())
+            self.setNoise(self.NoiseEntry.get())
+            self.restart()
+            while self.finished() == False:
+                self.life()
+
+            miner = Miner(self.map, self.pixelTypes[2][2], 1)
+            for veinAmount in range(self.pixelTypes[2][3]):
+                miner.reset()
+                x = ran.randint(1, self.width)
+                y = ran.randint(1, self.height)
+                miner.pos(x, y)
+                while miner.move():
+                    print(miner.X, miner.Y)
+                    try:
+                        self.map[miner.Y][miner.X] = 2
+                    except:
+                        pass
+
+            self.imageMap = self.output("preview", "Life")
+            self.imageMap = ImageTk.PhotoImage(self.imageMap)
+
+            self.ImageLabel = tk.Label(self.layout["left"], image=self.imageMap)
+            self.ImageLabel.image = self.ImageLabel
+            self.ImageLabel.grid(row=0, column=0)
+
+        except ValueError:
+            print("Could not set")
+
+
     def generate(self,event):
         try:
-            self.setHeight(self.HeightEntry.get())
-            self.setWidth(self.WidthEntry.get())
+            self.setWidth(self.HeightEntry.get())
+            self.setHeight (self.WidthEntry.get())
             
             self.setLimit(self.GenEntry.get())
             self.setNoise(self.NoiseEntry.get())
             self.restart()
             while self.finished() == False:
                 self.life()
-            self.output(str(self.width)+"x"+str(self.height))
-                    
-        except ValueError:
+
+            miner = Miner(self.map, self.pixelTypes[2][2],1 )
+            for veinAmount in range(self.pixelTypes[2][3]):
+                miner.reset()
+                x = ran.randint(1,self.width)
+                y = ran.randint(1,self.height)
+                miner.pos(x,y)
+                while miner.move():
+                    print(miner.X,miner.Y)
+                    try:
+                        self.map[miner.Y][miner.X] = 2
+                    except:
+                        pass
+
+            name = "{}x{}_G{}_{}%.bmp".format(str(self.width), str(self.height),self.generation,self.noise)
+            self.imageMap = self.output(name,"Life")
+            self.imageMap.save("Life/"+name)
+
+            self.imageMap = ImageTk.PhotoImage(self.imageMap)
+
+            self.ImageLabel = tk.Label(self.layout["left"], image=self.imageMap)
+            self.ImageLabel.image = self.ImageLabel
+            self.ImageLabel.grid(row=0, column=0)
+
+        except ValueError :
             print("Could not set")
+
        
     def life(self):
         self.generation += 1
         
         next = [[1 for j in range(self.width)] for i in range(self.height)]
 
-        #print(self.height,self.width)
         for i in range(1,self.height-1):
             for j in range(1, self.width-1):
                 sumCell = 0
